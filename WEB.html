@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Roman ↔ Arabic Converter</title>
+    <!-- Include Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- Link to the external CSS file -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Roman ↔ Arabic Converter</h1>
+
+        <div class="converter-grid">
+            <!-- Card: Roman to Integer -->
+            <div class="card">
+                <h2>➡️ Roman to Number</h2>
+                <div class="input-group">
+                    <label for="romanInput">Roman numeral</label>
+                    <input type="text" id="romanInput" placeholder="e.g. XXIV, MCMXC" value="XXIV">
+                </div>
+                <div class="result-box" id="romanToIntResult">24</div>
+                <div class="error-message" id="romanError"></div>
+                <button id="convertRomanBtn">Convert</button>
+            </div>
+
+            <!-- Card: Integer to Roman -->
+            <div class="card">
+                <h2>⬅️ Number to Roman</h2>
+                <div class="input-group">
+                    <label for="intInput">Integer (1 - 3999)</label>
+                    <input type="number" id="intInput" placeholder="e.g. 1999" min="1" max="3999" value="24">
+                </div>
+                <div class="result-box" id="intToRomanResult">XXIV</div>
+                <div class="error-message" id="intError"></div>
+                <button id="convertIntBtn">Convert</button>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: center;">
+            <div class="info-note">
+                ⚡ Valid roman symbols: I, V, X, L, C, D, M. Maximum 3999 (MMMCMXCIX).
+            </div>
+        </div>
+        <footer>Smart converter — real‑time validation</footer>
+    </div>
+
+    <script>
+        // --- Conversion logic ---
+
+        // Roman to Integer
+        function romanToInt(roman) {
+            const romanMap = {
+                'I': 1, 'V': 5, 'X': 10, 'L': 50,
+                'C': 100, 'D': 500, 'M': 1000
+            };
+
+            // Validate allowed characters
+            if (!/^[IVXLCDM]+$/.test(roman)) {
+                throw new Error("Only characters I,V,X,L,C,D,M allowed");
+            }
+
+            let total = 0;
+            for (let i = 0; i < roman.length; i++) {
+                const current = romanMap[roman[i]];
+                const next = romanMap[roman[i + 1]];
+
+                if (next && current < next) {
+                    total -= current;
+                } else {
+                    total += current;
+                }
+            }
+
+            // Extra validation: result must be between 1 and 3999 (classic roman)
+            if (total < 1 || total > 3999) {
+                throw new Error("Roman numeral must represent a value between 1 and 3999");
+            }
+
+            // Validate form: reverse conversion must match (to prevent IIII, VX, etc.)
+            const reverseCheck = intToRoman(total);
+            if (reverseCheck !== roman) {
+                throw new Error("Invalid combination of symbols (e.g., IIII, VX)");
+            }
+
+            return total;
+        }
+
+        // Integer to Roman
+        function intToRoman(num) {
+            if (num < 1 || num > 3999) {
+                throw new Error("Number must be between 1 and 3999");
+            }
+
+            const values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+            const symbols = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"];
+
+            let result = '';
+            for (let i = 0; i < values.length; i++) {
+                while (num >= values[i]) {
+                    num -= values[i];
+                    result += symbols[i];
+                }
+            }
+            return result;
+        }
+
+        // --- UI functions & real-time validation ---
+
+        // Update Roman to Integer result
+        function convertRomanToInt() {
+            const input = document.getElementById('romanInput');
+            const resultBox = document.getElementById('romanToIntResult');
+            const errorBox = document.getElementById('romanError');
+            const roman = input.value.trim().toUpperCase();
+
+            // Clear previous styles
+            input.classList.remove('error');
+            errorBox.innerText = '';
+
+            if (roman === '') {
+                input.classList.add('error');
+                errorBox.innerText = 'Field cannot be empty';
+                resultBox.innerText = '❌ Error';
+                return;
+            }
+
+            try {
+                const number = romanToInt(roman);
+                resultBox.innerText = number;
+                // Synchronize the other field
+                document.getElementById('intInput').value = number;
+                document.getElementById('intToRomanResult').innerText = roman;
+                input.classList.remove('error');
+            } catch (e) {
+                input.classList.add('error');
+                errorBox.innerText = e.message;
+                resultBox.innerText = '❌ Error';
+            }
+        }
+
+        // Update Integer to Roman result
+        function convertIntToRoman() {
+            const input = document.getElementById('intInput');
+            const resultBox = document.getElementById('intToRomanResult');
+            const errorBox = document.getElementById('intError');
+            const intValue = input.value.trim();
+
+            input.classList.remove('error');
+            errorBox.innerText = '';
+
+            if (intValue === '') {
+                input.classList.add('error');
+                errorBox.innerText = 'Field cannot be empty';
+                resultBox.innerText = '❌ Error';
+                return;
+            }
+
+            const num = Number(intValue);
+            if (!Number.isInteger(num)) {
+                input.classList.add('error');
+                errorBox.innerText = 'Must be an integer';
+                resultBox.innerText = '❌ Error';
+                return;
+            }
+
+            try {
+                const roman = intToRoman(num);
+                resultBox.innerText = roman;
+                // Synchronize the other field
+                document.getElementById('romanInput').value = roman;
+                document.getElementById('romanToIntResult').innerText = num;
+                input.classList.remove('error');
+            } catch (e) {
+                input.classList.add('error');
+                errorBox.innerText = e.message;
+                resultBox.innerText = '❌ Error';
+            }
+        }
+
+        // Event listeners for buttons
+        document.getElementById('convertRomanBtn').addEventListener('click', convertRomanToInt);
+        document.getElementById('convertIntBtn').addEventListener('click', convertIntToRoman);
+
+        // Automatic conversion while typing (improves UX)
+        document.getElementById('romanInput').addEventListener('input', function () {
+            clearTimeout(this.debounceTimer);
+            this.debounceTimer = setTimeout(() => convertRomanToInt(), 400);
+        });
+
+        document.getElementById('intInput').addEventListener('input', function () {
+            clearTimeout(this.debounceTimer);
+            this.debounceTimer = setTimeout(() => convertIntToRoman(), 400);
+        });
+
+        // Run once on load to display default values
+        window.onload = function () {
+            convertRomanToInt();
+        };
+    </script>
+</body>
+</html>
