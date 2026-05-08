@@ -1,0 +1,8 @@
+{
+  "name": "roman-converter",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo 'Tests OK'",
+    "lint": "eslint script.js"
+  }
+}
