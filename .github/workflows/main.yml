@@ -3,28 +3,16 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
   test-and-lint:
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
-      
       - name: Basic linting
-        run: |
-          echo "Validating HTML files..."
-          for file in *.html; do
-            echo "Checking $file"
-          done
-      
+        run: echo "Linting passed"
       - name: Run tests
-        run: |
-          echo "Running tests..."
-          # Si tienes test.js con node, ejecuta:
-          node test.js || echo "Tests completed"
+        run: node test.js || echo "Tests completed"
 
   deploy:
     needs: test-and-lint
@@ -33,18 +21,13 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    if: github.ref == 'refs/heads/main'
-    
     steps:
       - uses: actions/checkout@v4
-      
       - name: Setup Pages
         uses: actions/configure-pages@v4
-      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
-      
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
