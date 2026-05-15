@@ -28,7 +28,6 @@ function integerToRoman(num) {
     return result;
 }
 
-
 function romanToInteger(roman) {
     if (typeof roman !== 'string' || roman.trim() === '') {
         throw new Error('Input must be a valid Roman numeral.');
@@ -75,6 +74,11 @@ function handleConversion() {
     resultDiv.textContent = '';
     errorDiv.textContent = '';
 
+    gtag('event', 'convert_button_click', {
+        'input_value': input,
+        'conversion_mode': mode
+    });
+
     try {
         if (mode === 'intToRoman') {
             const num = parseInt(input, 10);
@@ -88,6 +92,10 @@ function handleConversion() {
             resultDiv.textContent = `Integer: ${num}`;
         }
     } catch (error) {
+        gtag('event', 'invalid_input_error', {
+            'input_value': input,
+            'error_message': error.message
+        });
         errorDiv.textContent = error.message;
     }
 }
